@@ -12,13 +12,15 @@ pygame.display.set_caption("Tetris")
 
 W =  10
 H = 20
-TILE = 45
+TILE = 35
 FPS = 60
 FIELD_W = (W * TILE)
 FIELD_H = (H * TILE)
 
-screen = pygame.display.set_mode((FIELD_W, FIELD_H))
+screen = pygame.display.set_mode((650, FIELD_H))
 clock = pygame.time.Clock()
+
+
 
 # Dict of all tetris block positions of individual squares within them,
 # coordinates used by pygame.Rect rfering to top right corner of the squares.
@@ -48,58 +50,74 @@ class TetrisPiece:
         self.color = Tetris_Blocks[block_name][4]
         self.position = [W // 2, 0]
         self.orientation = Tetris_Blocks[block_name]
+        self.old_position = None
+
     
-    def draw(self):
-        screen.fill(pygame.Color('black'))
 
-        for i_rect in grid:
-            pygame.draw.rect(screen, (100, 100, 100), i_rect, 1)
+    def undraw(self, surface):
+        if self.old_position:
+            for i in range(4):
+                x = self.old_position[0] + self.orientation[i][0]
+                y = self.old_position[1] + self.orientation[i][1]
+                prev_block_x = (x * TILE) + 1
+                prev_block_y = (y * TILE) + 1
 
+                prev_block = pygame.Rect(prev_block_x, prev_block_y, TILE - 2, TILE - 2)
+                pygame.draw.rect(surface, (0, 0, 0), prev_block)
+
+
+    def draw(self, surface):
+        #self.undraw(surface)   #undraw the old positions
         for i in range(4):
             x = self.orientation[i][0]
             y = self.orientation[i][1]
-            # Position is a list that contains the x and y coordinates of that 
-            # current instance of the class and when the block needs to be drawn 
-            # again it draws it with the new coordinates and uses the coordinates 
-            # from the dictionary.
-            block_x = (self.position[0] + x) * TILE
-            block_y = (self.position[1] + y) * TILE
-            
-            block = pygame.Rect(block_x, block_y, TILE, TILE)
-            pygame.draw.rect(screen, self.color, block)
+            block_x = ((self.position[0] + x) * TILE) + 1
+            block_y = ((self.position[1] + y) * TILE) + 1
 
-    # Methods
-    def down(self):
+            block = pygame.Rect(block_x, block_y, TILE-2, TILE-2)
+            pygame.draw.rect(surface, self.color, block)
+
+    def down(self, surface):
+        self.old_position = self.position.copy()  # Store the old position
+
         # Check if moving down would exceed the bottom boundary for any square
         for i in range(4):
-            x = Tetris_Blocks[self.block_name][i][0]
-            y = Tetris_Blocks[self.block_name][i][1]
+            x = self.orientation[i][0]
+            y = self.orientation[i][1]
 
             if self.position[1] + y + 1 >= H:
-                return
-        self.position[1] += 1
+                return False
 
-    def left(self):
+        self.position[1] += 1
+        self.undraw(surface)  # undraw the old positions
+        return True
+
+
+    def left(self, surface):
+        self.old_position = self.position.copy()  # Store the old position
         # Check if moving left would exceed the left boundary for any square
         for i in range(4):
-            x = Tetris_Blocks[self.block_name][i][0]
-            y = Tetris_Blocks[self.block_name][i][1]
+            x = self.orientation[i][0]
+            y = self.orientation[i][1]
 
             if self.position[0] + x - 1 < 0:
                 return
+        self.undraw(surface) #undraw the old positions
         self.position[0] -= 1
 
-    def right(self):
+    def right(self, surface):
+        self.old_position = self.position.copy()  # Store the old position
         # Check if moving right would exceed the right boundary for any square
         for i in range(4):
-            x = Tetris_Blocks[self.block_name][i][0]
-            y = Tetris_Blocks[self.block_name][i][1]
+            x = self.orientation[i][0]
+            y = self.orientation[i][1]
 
             if self.position[0] + x + 1 >= W:
                 return
+        self.undraw(surface) #undraw the old positions
         self.position[0] += 1
     
-    def rotate(self):
+    def rotate(self, surface):
         # If 'O_block' then do nothing
         if self.block_name == 'O_block':
             return
@@ -123,31 +141,34 @@ class TetrisPiece:
                 or self.position[0] + x >= W
                 or self.position[1] + y >= H
             ):
-                # Rotation would go beyond the boundaries so revert the changes
+
                 return
 
-        # If the rotated piece is within bounds update the orientation
+        self.old_position = self.position.copy()  # Store the old position
+        self.undraw(surface) #undraw the old positions
+
+        # If the rotated piece is within bounds, update the orientation
         self.orientation = original_orientation
+
+        
+
+# Create surfaces for background and foreground
+background_surface = pygame.Surface((FIELD_W, FIELD_H))
+background_surface.fill((0, 0, 0))  # Fill background with black
+for i_rect in grid:
+    pygame.draw.rect(background_surface, (40, 40, 40), i_rect, 1)
+
+foreground_surface = pygame.Surface((FIELD_W, FIELD_H), pygame.SRCALPHA)
+
+fallen_blocks = []
 
 
 while True:
     # Randomly picks a Tetris Block to spawn
-    current_piece = TetrisPiece(random.choice(list(Tetris_Blocks.keys())))
+    current_block = TetrisPiece(random.choice(list(Tetris_Blocks.keys())))
     move_timer = pygame.time.get_ticks()
 
     while True:
-        # Add the block to the 2D List that tracks all positions
-
-
-
-        # Block is draged down until it reaches the bottom
-        
-
-
-        # Draw the grid using the 'grid' list 
-        for i_rect in grid:
-            pygame.draw.rect(screen, (40, 40, 40), i_rect, 1)
-
         # Stop the program when it's closed
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -159,37 +180,52 @@ while True:
         # Continue to make the blocks fall
         move_speed = 320
         if pygame.time.get_ticks() - move_timer > move_speed:
-            current_piece.down()
+            # This moves the block down and once it sees that 
+            # it can't, it breaks the inner while loop to generate anouther block
+            if current_block.down(foreground_surface) == False:
+                #Appends current_block to fallen_blocks list
+                fallen_blocks.append(current_block)
+                break
             move_timer = pygame.time.get_ticks()
         
         if keys[pygame.K_DOWN]:
             move_speed = 50
             if pygame.time.get_ticks() - move_timer > move_speed:
-                current_piece.down()
+                current_block.down(foreground_surface)
                 move_timer = pygame.time.get_ticks()
 
         if keys[pygame.K_LEFT]:
             move_speed = 80
             if pygame.time.get_ticks() - move_timer > move_speed:
-                current_piece.left()
+                current_block.left(foreground_surface)
                 move_timer = pygame.time.get_ticks()
 
         if keys[pygame.K_RIGHT]:
             move_speed = 80
             if pygame.time.get_ticks() - move_timer > move_speed:
-                current_piece.right()
+                current_block.right(foreground_surface)
                 move_timer = pygame.time.get_ticks()
         
         if keys[pygame.K_UP]:
             move_speed = 90
             if pygame.time.get_ticks() - move_timer > move_speed:
-                current_piece.rotate()
+                current_block.rotate(foreground_surface)
                 move_timer = pygame.time.get_ticks()
                 
         
-        # Draw after any change or no change.
-        current_piece.draw()
 
+        # Draw the background
+        screen.blit(background_surface, (0, 0))
+
+        # Draw the current falling piece
+        current_block.draw(foreground_surface)
+
+        # Draw the fallen pieces
+        for piece in fallen_blocks:
+            piece.draw(foreground_surface)
+
+        # Draw the foreground on top of the background
+        screen.blit(foreground_surface, (0, 0))
 
         pygame.display.flip()
         clock.tick(FPS)
