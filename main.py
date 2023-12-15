@@ -1,7 +1,7 @@
 import pygame
 import random
-from TetrisClass import TetrisPiece
-from settings import W, H, TILE, FPS, FIELD_W, FIELD_H, Tetris_Blocks
+from Tetris import TetrisPiece
+from settings import *
 
 
 # Initialize the pygame module
@@ -15,7 +15,6 @@ pygame.display.set_caption("Tetris")
 
 screen = pygame.display.set_mode((650, FIELD_H))
 clock = pygame.time.Clock()
-
 
 
 # Making many rectangles on the screen that cover the window

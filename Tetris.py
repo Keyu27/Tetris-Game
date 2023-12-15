@@ -1,7 +1,6 @@
 import pygame
 import copy
-import random
-from settings import W, H, TILE, FPS, FIELD_W, FIELD_H, Tetris_Blocks
+from settings import *
 
 # Tetris Block Class
 class TetrisPiece:
