@@ -33,8 +33,6 @@ for i_rect in grid:
 
 foreground_surface = pygame.Surface((FIELD_W, FIELD_H), pygame.SRCALPHA)
 
-fallen_blocks = []
-
 
 while True:
     # Randomly picks a Tetris Block to spawn

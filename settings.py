@@ -5,6 +5,8 @@ FPS = 60
 FIELD_W = (W * TILE)
 FIELD_H = (H * TILE)
 
+fallen_blocks = []
+
 # Dict of all tetris block positions of individual squares within them,
 # coordinates used by pygame.Rect rfering to top right corner of the squares.
 # Also contians RGB color value for that partitcular block

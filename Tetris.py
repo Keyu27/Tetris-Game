@@ -36,6 +36,19 @@ class TetrisPiece:
             block = pygame.Rect(block_x, block_y, TILE-2, TILE-2)
             pygame.draw.rect(surface, self.color, block)
 
+
+    def get_occupied_positions(self):
+        # Return a list of positions occupied by fallen blocks
+        occupied_positions = []
+        for block in fallen_blocks:
+            for block_coord in block.orientation:
+                occupied_positions.append(
+                    (block.position[0] + block_coord[0], block.position[1] + block_coord[1])
+                )
+        return occupied_positions
+
+
+
     def down(self, surface):
         self.old_position = self.position.copy()  # Store the old position
 
@@ -44,7 +57,9 @@ class TetrisPiece:
             x = self.orientation[i][0]
             y = self.orientation[i][1]
 
-            if self.position[1] + y + 1 >= H:
+            if (
+            self.position[1] + y + 1 >= H 
+            or (self.position[0] + x, self.position[1] + y + 1) in self.get_occupied_positions()):
                 return False
 
         self.position[1] += 1
@@ -59,8 +74,11 @@ class TetrisPiece:
             x = self.orientation[i][0]
             y = self.orientation[i][1]
 
-            if self.position[0] + x - 1 < 0:
+            if (
+            self.position[0] + x - 1 < 0
+            or (self.position[0] + x - 1, self.position[1] + y) in self.get_occupied_positions()):
                 return
+            
         self.undraw(surface) #undraw the old positions
         self.position[0] -= 1
 
@@ -71,8 +89,11 @@ class TetrisPiece:
             x = self.orientation[i][0]
             y = self.orientation[i][1]
 
-            if self.position[0] + x + 1 >= W:
+            if (
+            self.position[0] + x + 1 >= W
+            or (self.position[0] + x + 1, self.position[1] + y) in self.get_occupied_positions()):
                 return
+        
         self.undraw(surface) #undraw the old positions
         self.position[0] += 1
     
@@ -96,11 +117,10 @@ class TetrisPiece:
             y = original_orientation[i][1]
 
             if (
-                self.position[0] + x < 0
-                or self.position[0] + x >= W
-                or self.position[1] + y >= H
-            ):
-
+            self.position[0] + x < 0
+            or self.position[0] + x >= W
+            or self.position[1] + y >= H
+            or (self.position[0] + x, self.position[1] + y) in self.get_occupied_positions()):
                 return
 
         self.old_position = self.position.copy()  # Store the old position
