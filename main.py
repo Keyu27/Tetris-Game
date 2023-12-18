@@ -34,6 +34,14 @@ for i_rect in grid:
 foreground_surface = pygame.Surface((FIELD_W, FIELD_H), pygame.SRCALPHA)
 
 
+def draw_score(surface):
+    font = pygame.font.Font(None, 40)
+    score_text = font.render(f"Score: {score}", True, (255, 255, 255))
+    surface.blit(score_text, (FIELD_W + 20, 20))
+
+
+score = 0
+
 while True:
     # Randomly picks a Tetris Block to spawn
     current_block = TetrisPiece(random.choice(list(Tetris_Blocks.keys())))
@@ -91,9 +99,13 @@ while True:
         # Draw the current falling piece
         current_block.draw(foreground_surface)
 
+
         # Draw the fallen pieces
         for piece in fallen_blocks:
             piece.draw(foreground_surface)
+
+        # Draw the score
+        draw_score(screen)
 
         # Draw the foreground on top of the background
         screen.blit(foreground_surface, (0, 0))
