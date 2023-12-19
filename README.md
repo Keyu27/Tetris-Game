@@ -23,7 +23,7 @@ This project is a very simple Tetris game developed in Python with the Pygame li
 - Pygame-based graphical interface
 
 ## Installation
-
+Please download the main.exe and logo.png in the release. Put them in a folder and run the exe file to start the game.
 
 ## Controls
 - Up Arrow: rotates the Tetris block
