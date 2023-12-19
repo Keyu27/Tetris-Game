@@ -2,7 +2,7 @@ import pygame
 import copy
 from settings import *
 
-# Tetris Block Class
+# Tetris Block Class##########
 class TetrisPiece:
     def __init__(self, block_name):
         self.block_name = block_name
@@ -10,6 +10,7 @@ class TetrisPiece:
         self.position = [W // 2, 0]
         self.orientation = Tetris_Blocks[block_name]
         self.old_position = None
+        self.block_num = 4
 
     
 
@@ -53,7 +54,7 @@ class TetrisPiece:
         self.old_position = self.position.copy()  # Store the old position
 
         # Check if moving down would exceed the bottom boundary for any square
-        for i in range(4):
+        for i in range(self.block_num):
             x = self.orientation[i][0]
             y = self.orientation[i][1]
 
@@ -128,3 +129,4 @@ class TetrisPiece:
 
         # If the rotated piece is within bounds, update the orientation
         self.orientation = original_orientation
+#Class End################

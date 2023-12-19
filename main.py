@@ -1,7 +1,8 @@
 import pygame
 import random
-from Tetris import TetrisPiece
+import copy
 from settings import *
+from Tetris import *
 
 
 # Initialize the pygame module
@@ -34,17 +35,60 @@ for i_rect in grid:
 foreground_surface = pygame.Surface((FIELD_W, FIELD_H), pygame.SRCALPHA)
 
 
+
 def draw_score(surface):
+    # Clear the area where the score is rendered
+    pygame.draw.rect(surface, (0, 0, 0), (FIELD_W, 0, 150, 60))
+
     font = pygame.font.Font(None, 40)
     score_text = font.render(f"Score: {score}", True, (255, 255, 255))
     surface.blit(score_text, (FIELD_W + 20, 20))
+
+
+def remove_completed_rows():
+    global fallen_blocks, score
+
+    full_rows = []  # List to store the indices of full rows
+
+    for row in range(H):
+        # Check if the row is full
+        if all((x, row) in current_block.get_occupied_positions() for x in range(W)):
+            full_rows.append(row)
+
+    # If there are full rows, remove them and shift blocks above down
+    if full_rows:
+        # Remove full rows from fallen_blocks
+        fallen_blocks = [block for block in fallen_blocks if block.position[1] not in full_rows]
+
+        # Shift down the blocks above the removed rows
+        for block in fallen_blocks:
+            for row in sorted(full_rows, reverse=True):
+                # Shift blocks above the removed row down
+                if block.position[1] < row:
+                    block.position[1] += 1
+
+        # Update the score (you can adjust the scoring system as needed)
+        score += len(full_rows) * 100
+
+        # Decrement block_num in TetrisPiece for the removed rows
+        for row in full_rows:
+            for block in fallen_blocks:
+                block.block_num -= sum(1 for coord in block.orientation if block.position[1] + coord[1] == row)
+
+
+
 
 
 score = 0
 
 while True:
     # Randomly picks a Tetris Block to spawn
+    # Call this function when needed, for example, before spawning a new block
     current_block = TetrisPiece(random.choice(list(Tetris_Blocks.keys())))
+
+    # Draw the score
+    draw_score(screen)
+
     move_timer = pygame.time.get_ticks()
 
     while True:
@@ -99,16 +143,22 @@ while True:
         # Draw the current falling piece
         current_block.draw(foreground_surface)
 
-
-        # Draw the fallen pieces
-        for piece in fallen_blocks:
-            piece.draw(foreground_surface)
-
-        # Draw the score
-        draw_score(screen)
-
         # Draw the foreground on top of the background
         screen.blit(foreground_surface, (0, 0))
 
         pygame.display.flip()
         clock.tick(FPS)
+    
+    remove_completed_rows()
+    
+    # Create surfaces for background and foreground
+    background_surface = pygame.Surface((FIELD_W, FIELD_H))
+    background_surface.fill((0, 0, 0))  # Fill background with black
+    for i_rect in grid:
+        pygame.draw.rect(background_surface, (40, 40, 40), i_rect, 1)
+
+    foreground_surface = pygame.Surface((FIELD_W, FIELD_H), pygame.SRCALPHA)
+    
+    # Draw the fallen pieces
+    for piece in fallen_blocks:
+        piece.draw(foreground_surface)
