@@ -6,7 +6,7 @@ A simple Tetris game implemented in Python using the Pygame library.
 
 - Introduction
 - Features
-- Installation]
+- Installation
 - Controls
 - Known Problems
 - License
